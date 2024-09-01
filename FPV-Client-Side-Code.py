@@ -13,12 +13,16 @@ print("Enter the Pi IP address: ")
 ip = input()
 port = 5050
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Status list, each index corresponds to control
 global status
 status = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def press_on(key):
     global status
     print('Press on: {}'.format(key))
+
+    # Key press controls update control status
     if str(key)[1:2] == 'w':
         status[0] = 1
     if str(key)[1:2] == 'a':
@@ -50,17 +54,23 @@ def sendData():
     global status
     while True:
         print("sendData: status is %s" % (status))
+
+        # Converts status list to byte arary for socket
         client.sendto(pickle.dumps(status), (ip, port))
         time.sleep(.01)
 
 def control():
     print("controlling!")
+
+    # Listens to keyboard presses
     with Listener(on_press=press_on) as l:
         l.join()
 
 def press_off(key):
     print('Press off: {}'.format(key))
     global status
+
+    # Resets controls to all off-- allows for short and long press controls
     status = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     if key == Key.esc:
@@ -81,6 +91,7 @@ def camServer():
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind((serverip, camPort))
 
+    # Receives camera bytes and opens video stream
     while True:
         data, addr = server.recvfrom(64000)
         print('data received')
